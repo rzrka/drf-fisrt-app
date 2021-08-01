@@ -22,27 +22,6 @@ class UsersModelViewSet(APIView):
         return Response(serializer.data)
 
 
-class UsersModelViewSetTest(ViewSet):
-    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-
-    def retrieve(self, request, pk=None):
-        user = get_object_or_404(Users, id=pk)
-        serializer = UsersModelSerializer(user)
-        return Response(serializer.data)
-
-    def create(self, request):
-        user_data = request.data
-        new_user = Users.objects.create(
-            email=user_data['email'],
-            username=user_data['username'],
-            firstname=user_data['firstname'],
-            lastname=user_data['lastname'],
-        )
-        new_user.save()
-
-        serializer = UsersModelSerializer(new_user)
-        return Response(serializer.data)
-
 class UserModelViewSet(APIView):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     serializer = UsersModelSerializer
@@ -63,12 +42,17 @@ class UserModelViewSet(APIView):
         )
         new_user.save()
 
-        serializer = UsersModelSerializer(new_user, many=True)
+        serializer = UsersModelSerializer(new_user)
         return Response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
         user = Users.objects.get(id=kwargs['pk'])
-        request = request.data
+        response = request.data
+        for el in response:
+            user.__dict__[el] = response[el]
+        user.save()
+        serializer = UsersModelSerializer(user)
+        return Response(serializer.data)
 
 
 
