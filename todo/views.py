@@ -2,20 +2,28 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
+
 from .models import Projects, Todo
 from .serializers import ProjectSerializer, TodoSerializer
-from rest_framework.response import Response
+from .filters import ProjectsFilter
+
+
 
 
 class UsersPaggination(LimitOffsetPagination):
-    default_limit = 3
+    default_limit = 10
 
 
 class ProjectsModelViewSet(ViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    filterset_class = ProjectsFilter
 
     def list(self, request):
+        title = request.query_params.get('title', '')
         projects = Projects.objects.all()
+        if title:
+            projects = projects.filter(title__contains=title)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
