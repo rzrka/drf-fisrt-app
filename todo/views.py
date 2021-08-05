@@ -9,15 +9,12 @@ from .serializers import ProjectSerializer, TodoSerializer
 from .filters import ProjectsFilter
 
 
-
-
 class UsersPaggination(LimitOffsetPagination):
     default_limit = 10
 
 
 class ProjectsModelViewSet(ViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-    filterset_class = ProjectsFilter
 
     def list(self, request):
         title = request.query_params.get('title', '')
@@ -44,6 +41,12 @@ class ProjectsModelViewSet(ViewSet):
         serializer = ProjectSerializer(new_project)
         return Response(serializer.data)
 
+    def delete(self, request, *args, **kwargs):
+        project = Projects.objects.get(id=kwargs['pk'])
+        project.delete()
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data)
+
 
     def patch(self, request, *args, **kwargs):
         project_id = Projects.objects.get(id=kwargs['pk'])
@@ -54,7 +57,49 @@ class ProjectsModelViewSet(ViewSet):
         serializer = ProjectSerializer(project_id)
         return Response(serializer.data)
 
-class TodoModelViewSet(ModelViewSet):
+class TodoModelViewSet(ViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-    queryset = Todo.objects.all()
-    serializer_class = TodoSerializer 
+
+
+    def list(self, request):
+        title = request.query_params.get('title', '')
+        todo = Todo.objects.all()
+        if title:
+            todo = todo.filter(title__contains=title)
+        serializer = TodoSerializer(todo, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        todo = get_object_or_404(Todo, pk=pk)
+        serializer = TodoSerializer(todo)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        todo_data = request.data
+        new_todo = Todo.objects.create(
+            title=todo_data['title'],
+            text=todo_data['text'],
+            status=True,
+            users_id=51,
+        )
+        new_todo.save()
+
+        serializer = TodoSerializer(new_todo)
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        todo = Todo.objects.get(id=kwargs['pk'])
+        todo.status = False
+        todo.save()
+        serializer = TodoSerializer(todo)
+        return Response(serializer.data)
+
+
+    def patch(self, request, *args, **kwargs):
+        todo_id = Todo.objects.get(id=kwargs['pk'])
+        todo_data = request.data
+        for el in todo_data:
+            todo_id.__dict__[el] = todo_data[el]
+        todo_id.save()
+        serializer = TodoSerializer(todo_id)
+        return Response(serializer.data)
