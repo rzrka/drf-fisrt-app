@@ -3,7 +3,8 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
 from .models import Projects, Todo
 from .serializers import ProjectSerializer, TodoSerializer
 from .filters import ProjectsFilter
@@ -59,7 +60,7 @@ class ProjectsModelViewSet(ViewSet):
 
 class TodoModelViewSet(ViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-
+    permission_classes = []
 
     def list(self, request):
         title = request.query_params.get('title', '')
@@ -76,11 +77,14 @@ class TodoModelViewSet(ViewSet):
 
     def post(self, request, *args, **kwargs):
         todo_data = request.data
+        user = request.query_params.get('Authorization', None)
+        user_id = Token.objects.get(key=user).user_id
+        user = User.objects.get(id=user_id)
         new_todo = Todo.objects.create(
             title=todo_data['title'],
             text=todo_data['text'],
             status=True,
-            users_id=51,
+            users=user,
         )
         new_todo.save()
 
