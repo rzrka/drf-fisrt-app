@@ -10,7 +10,7 @@ const ProjectsItem = ({item}) => {
                 {item.link_rep}
             </td>
             <td>
-                {item.users.email}
+                {item.user.email}
             </td>
         </tr>
     )

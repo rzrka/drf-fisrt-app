@@ -16,7 +16,7 @@ const TodoItem = ({item}) => {
                 {item.status}
             </td>
             <td>
-                {item.users.email}
+                {item.user.id}
             </td>
         </tr>
     )

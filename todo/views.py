@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404
+from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 from .models import Projects, Todo
+from users.models import Users
 from .serializers import ProjectSerializer, TodoSerializer
-from .filters import ProjectsFilter
 
 
 class UsersPaggination(LimitOffsetPagination):
@@ -16,6 +16,7 @@ class UsersPaggination(LimitOffsetPagination):
 
 class ProjectsModelViewSet(ViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    permission_classes = [permissions.AllowAny]
 
     def list(self, request):
         title = request.query_params.get('title', '')
@@ -35,7 +36,7 @@ class ProjectsModelViewSet(ViewSet):
         new_project = Projects.objects.create(
             title=poject_data['title'],
             link_rep=poject_data['link_rep'],
-            users_id=51
+            user=request.user
         )
         new_project.save()
 
@@ -48,7 +49,6 @@ class ProjectsModelViewSet(ViewSet):
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
-
     def patch(self, request, *args, **kwargs):
         project_id = Projects.objects.get(id=kwargs['pk'])
         project_data = request.data
@@ -58,9 +58,10 @@ class ProjectsModelViewSet(ViewSet):
         serializer = ProjectSerializer(project_id)
         return Response(serializer.data)
 
+
 class TodoModelViewSet(ViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
         title = request.query_params.get('title', '')
@@ -77,14 +78,10 @@ class TodoModelViewSet(ViewSet):
 
     def post(self, request, *args, **kwargs):
         todo_data = request.data
-        user = request.query_params.get('Authorization', None)
-        user_id = Token.objects.get(key=user).user_id
-        user = User.objects.get(id=user_id)
         new_todo = Todo.objects.create(
             title=todo_data['title'],
             text=todo_data['text'],
-            status=True,
-            users=user,
+            user=request.user,
         )
         new_todo.save()
 
@@ -97,7 +94,6 @@ class TodoModelViewSet(ViewSet):
         todo.save()
         serializer = TodoSerializer(todo)
         return Response(serializer.data)
-
 
     def patch(self, request, *args, **kwargs):
         todo_id = Todo.objects.get(id=kwargs['pk'])

@@ -10,10 +10,10 @@ const UsersItem = ({item}) => {
                 {item.username}
             </td>
             <td>
-                {item.firstname}
+                {item.first_name}
             </td>
             <td>
-                {item.lastname}
+                {item.last_name}
             </td>
         </tr>
     )
