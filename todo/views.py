@@ -76,7 +76,7 @@ class TodoModelViewSet(ViewSet):
         serializer = TodoSerializer(todo)
         return Response(serializer.data)
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         todo_data = request.data
         new_todo = Todo.objects.create(
             title=todo_data['title'],
@@ -86,7 +86,7 @@ class TodoModelViewSet(ViewSet):
         new_todo.save()
 
         serializer = TodoSerializer(new_todo)
-        return Response(serializer.data)
+        return Response(serializer.data, status=201)
 
     def delete(self, request, *args, **kwargs):
         todo = Todo.objects.get(id=kwargs['pk'])
@@ -95,7 +95,7 @@ class TodoModelViewSet(ViewSet):
         serializer = TodoSerializer(todo)
         return Response(serializer.data)
 
-    def patch(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         todo_id = Todo.objects.get(id=kwargs['pk'])
         todo_data = request.data
         for el in todo_data:
