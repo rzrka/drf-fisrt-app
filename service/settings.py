@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'graphene_django',
     # app
     'users',
     'todo',
@@ -150,3 +151,8 @@ REST_FRAMEWORK = {
 
 
 AUTH_USER_MODEL = 'users.Users'
+
+
+GRAPHENE = {
+    "SCHEMA": "service.schema.schema",
+}
