@@ -4,9 +4,7 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
 from .models import Projects, Todo
-from users.models import Users
 from .serializers import ProjectSerializer, TodoSerializer
 
 
